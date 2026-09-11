@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "id": "0E92jZ9w7P0",
+    "title": "Sezen Aksu - Candan Erçetin / Keskin Bıçak",
+    "uploader": "Ahmet Atlı",
+    "sourceUrl": "https://youtu.be/0E92jZ9w7P0?si=NalUxavoEl7p6Z1e",
+    "thumbnail": "https://i.ytimg.com/vi/0E92jZ9w7P0/hqdefault.jpg",
+    "duration": null,
+    "uploadDate": null,
+    "archivedAt": "2026-09-11T17:28:00.000Z",
+    "artifactRunUrl": null,
+    "status": "metadata-only",
+    "notes": "Metadata retrieved from YouTube oEmbed. GitHub Actions is disabled; no video binary was downloaded."
+  }
+]
