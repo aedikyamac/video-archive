@@ -53,43 +53,29 @@ def normalize_url(value: str) -> str:
 
 
 def _service_account_credentials():
-    """Resolve native GCP auth and common Modal secret key formats."""
-    from google.auth import default as google_auth_default
+    import os, json
     from google.oauth2 import service_account
-
     scopes = ['https://www.googleapis.com/auth/drive']
-
-    # Native GCP/Modal integration normally exposes this path. Let Google's
-    # ADC loader handle it, including quota/project configuration.
-    credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-    if credentials_path and Path(credentials_path).exists():
-        return service_account.Credentials.from_service_account_file(
-            credentials_path,
-            scopes=scopes,
-        )
-
-    # Some Modal secrets expose the JSON directly under one of these names.
-    raw = os.getenv("SERVICE_ACCOUNT_JSON") or os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON") or os.getenv("SERVICE_ACCOUNT_KEY")
+    raw = os.getenv('SERVICE_ACCOUNT_JSON') or os.getenv('GOOGLE_SERVICE_ACCOUNT_JSON') or os.getenv('SERVICE_ACCOUNT_KEY')
     if raw:
-        candidate = Path(raw)
-        if candidate.exists():
-            return service_account.Credentials.from_service_account_file(
-                str(candidate), scopes=scopes
-            )
-        try:
-            document = json.loads(raw)
-        except json.JSONDecodeError as exc:
-            raise RuntimeError("SERVICE_ACCOUNT_KEY must be JSON or a credential-file path") from exc
-        return service_account.Credentials.from_service_account_info(
-            document, scopes=scopes
-        )
-
-    # Also support native application-default credentials without requiring a
-    # service-account JSON variable at all.
-    credentials, _ = google_auth_default(
-        scopes=scopes
-    )
-    return credentials
+        raw = raw.strip()
+        if raw.startswith('{'):
+            try:
+                data = json.loads(raw)
+                return service_account.Credentials.from_service_account_info(data, scopes=scopes)
+            except Exception as e:
+                print('Error parsing JSON credentials:', e)
+        else:
+            try:
+                from pathlib import Path
+                p = Path(raw)
+                if p.is_file():
+                    return service_account.Credentials.from_service_account_file(str(p), scopes=scopes)
+            except Exception:
+                pass
+    from google.auth import default as google_auth_default
+    creds, _ = google_auth_default(scopes=scopes)
+    return creds
 
 
 def drive_upload(path: Path, metadata: dict[str, Any]) -> str | None:
