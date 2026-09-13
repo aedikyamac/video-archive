@@ -121,7 +121,19 @@ def archive(payload: dict[str, Any]) -> dict[str, Any]:
     with tempfile.TemporaryDirectory() as directory:
         output = Path(directory) / "%(id)s.%(ext)s"
         from yt_dlp import YoutubeDL
-        options = {"outtmpl": str(output), "format": "bv*+ba/b", "merge_output_format": "mp4", "noplaylist": True, "quiet": True}
+        options = {
+            "outtmpl": str(output),
+            "format": "bv*+ba/b",
+            "merge_output_format": "mp4",
+            "noplaylist": True,
+            "quiet": True,
+            "extractor_args": {
+                "youtube": {
+                    "player_client": ["android", "ios"],
+                    "player_skip": ["webpage", "configs"],
+                }
+            },
+        }
         with YoutubeDL(options) as ydl:
             info = ydl.extract_info(source, download=True)
             filename = Path(ydl.prepare_filename(info))
