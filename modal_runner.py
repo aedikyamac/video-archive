@@ -79,20 +79,26 @@ def _service_account_credentials():
 
 
 def drive_upload(path: Path, metadata: dict[str, Any]) -> str | None:
-    # An explicit Modal secret/environment value takes precedence; otherwise
-    # use the owner's configured archive folder so no folder setting is needed.
-    folder = os.getenv("GOOGLE_DRIVE_FOLDER_ID") or DEFAULT_GOOGLE_DRIVE_FOLDER_ID
+    # Upload into the configured/shared Drive folder so service accounts do not
+    # attempt to write to their quota-less My Drive.
+    folder_id = os.getenv("DRIVE_FOLDER_ID", DEFAULT_GOOGLE_DRIVE_FOLDER_ID)
     from googleapiclient.discovery import build
     from googleapiclient.http import MediaFileUpload
 
     service = build("drive", "v3", credentials=_service_account_credentials(), cache_discovery=False)
-    body = {"name": path.name, "parents": [folder], "description": json.dumps(metadata)}
+    file_metadata = {
+        "name": path.name,
+        "parents": [folder_id],
+        "description": json.dumps(metadata),
+    }
+    media = MediaFileUpload(str(path), resumable=True)
     result = service.files().create(
-        body=body,
-        media_body=MediaFileUpload(str(path), resumable=True),
-        fields="id,webViewLink,webContentLink",
+        body=file_metadata,
+        media_body=media,
+        supportsAllDrives=True,
+        fields="id,webViewLink",
     ).execute()
-    return result.get("webViewLink") or result.get("webContentLink") or result["id"]
+    return result.get("webViewLink") or result.get("id")
 
 
 def github_metadata(record: dict[str, Any]) -> None:
