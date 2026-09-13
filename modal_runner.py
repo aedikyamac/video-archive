@@ -9,7 +9,7 @@ The function accepts either Modal secret name when available:
   video-archive-config (legacy/configuration secret)
 
 Expected configuration can be supplied by Modal secrets or environment variables:
-  GOOGLE_DRIVE_FOLDER_ID
+  GOOGLE_DRIVE_FOLDER_ID (defaults to the configured archive folder below)
   GOOGLE_SERVICE_ACCOUNT_JSON, SERVICE_ACCOUNT_KEY, or
   GOOGLE_APPLICATION_CREDENTIALS
 Optional GitHub metadata publishing:
@@ -28,6 +28,7 @@ from typing import Any
 import modal
 
 VIDEO_ID = re.compile(r"^[A-Za-z0-9_-]{6,20}$")
+DEFAULT_GOOGLE_DRIVE_FOLDER_ID = "1DLURc7TpH0tymnEW3bEX_bi9zN7vFvAl"
 
 image = (
     modal.Image.debian_slim(python_version="3.11")
@@ -92,9 +93,9 @@ def _service_account_credentials():
 
 
 def drive_upload(path: Path, metadata: dict[str, Any]) -> str | None:
-    folder = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
-    if not folder:
-        return None
+    # An explicit Modal secret/environment value takes precedence; otherwise
+    # use the owner's configured archive folder so no folder setting is needed.
+    folder = os.getenv("GOOGLE_DRIVE_FOLDER_ID") or DEFAULT_GOOGLE_DRIVE_FOLDER_ID
     from googleapiclient.discovery import build
     from googleapiclient.http import MediaFileUpload
 
