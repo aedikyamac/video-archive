@@ -1,6 +1,7 @@
 """Modal serverless worker for owner-authorized video archiving."""
 from __future__ import annotations
 
+import base64
 import json
 import os
 import re
@@ -10,6 +11,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import modal
 
@@ -24,7 +26,7 @@ image = (
     .pip_install("yt-dlp", "fastapi", "google-api-python-client", "google-auth")
 )
 app = modal.App("video-archive")
-MODAL_SECRETS = [modal.Secret.from_name("googlecloud-secret")]
+MODAL_SECRETS = [modal.Secret.from_name("googlecloud-secret"), modal.Secret.from_name("youtube-secret")]
 
 
 def normalize_url(value: str) -> str:
@@ -88,7 +90,6 @@ def github_metadata(record: dict[str, Any]) -> None:
     target = os.getenv("GITHUB_METADATA_PATH", "data/videos.json")
     if not token:
         return
-    import base64
     owner, name = repo.split("/", 1)
     api = f"https://api.github.com/repos/{owner}/{name}/contents/{target}"
     request = urllib.request.Request(api, headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"})
@@ -140,12 +141,27 @@ def _download_ytdlp(source: str, directory: Path) -> tuple[Path, dict[str, Any]]
     output = directory / "%(id)s.%(ext)s"
     from yt_dlp import YoutubeDL
     options = {"outtmpl": str(output), "format": "bv*+ba/b", "merge_output_format": "mp4", "noplaylist": True, "quiet": True, "extractor_args": {"youtube": {"player_client": ["android", "ios"], "player_skip": ["webpage", "configs"]}}}
+    encoded_cookies = os.environ.get("YOUTUBE_COOKIES")
+    if encoded_cookies:
+        cookie_path = Path("/tmp/youtube_cookies.txt")
+        compact_cookies = "".join(encoded_cookies.split())
+        try:
+            cookie_bytes = base64.b64decode(compact_cookies, validate=True)
+        except (ValueError, base64.binascii.Error):
+            cookie_bytes = encoded_cookies.encode()
+        cookie_path.write_bytes(cookie_bytes)
+        options["cookiefile"] = str(cookie_path)
     with YoutubeDL(options) as ydl:
         info = ydl.extract_info(source, download=True)
         filename = Path(ydl.prepare_filename(info))
         if not filename.exists():
             filename = filename.with_suffix(".mp4")
         return filename, {"sourceUrl": source, "title": info.get("title") or info.get("id"), "uploader": info.get("uploader"), "thumbnail": info.get("thumbnail"), "duration": info.get("duration")}
+
+
+def _is_youtube_url(source: str) -> bool:
+    hostname = (urlparse(source).hostname or "").lower()
+    return hostname == "youtu.be" or hostname == "youtube.com" or hostname.endswith(".youtube.com")
 
 
 @app.function(image=image, timeout=3600, secrets=MODAL_SECRETS)
@@ -155,13 +171,17 @@ def archive(payload: dict[str, Any]) -> dict[str, Any]:
         source = normalize_url(str(payload.get("url") or payload.get("id") or ""))
         with tempfile.TemporaryDirectory() as directory_name:
             directory = Path(directory_name)
-            try:
-                filename, record = _download_cobalt(source, directory)
-                record["downloader"] = "cobalt"
-            except Exception as cobalt_error:
-                print(f"Cobalt downloader failed for {source}: {cobalt_error}; falling back to yt-dlp")
+            if _is_youtube_url(source):
                 filename, record = _download_ytdlp(source, directory)
                 record["downloader"] = "yt-dlp"
+            else:
+                try:
+                    filename, record = _download_cobalt(source, directory)
+                    record["downloader"] = "cobalt"
+                except Exception as cobalt_error:
+                    print(f"Cobalt downloader failed for {source}: {cobalt_error}; falling back to yt-dlp")
+                    filename, record = _download_ytdlp(source, directory)
+                    record["downloader"] = "yt-dlp"
             record.update({"archivedAt": datetime.now(timezone.utc).isoformat(), "status": "downloaded"})
             record["artifactRunUrl"] = drive_upload(filename, record)
             record["status"] = "uploaded" if record["artifactRunUrl"] else "downloaded_ephemeral"
