@@ -23,7 +23,7 @@ COBALT_HEADERS = {"Accept": "application/json", "Content-Type": "application/jso
 image = (
     modal.Image.debian_slim(python_version="3.11")
     .apt_install("ffmpeg")
-    .pip_install("yt-dlp", "fastapi", "google-api-python-client", "google-auth")
+    .pip_install("yt-dlp==2026.08.19", "fastapi", "google-api-python-client", "google-auth")
 )
 app = modal.App("video-archive")
 MODAL_SECRETS = [modal.Secret.from_name("googlecloud-secret"), modal.Secret.from_name("youtube-secret")]
@@ -140,7 +140,7 @@ def _download_cobalt(source: str, directory: Path) -> tuple[Path, dict[str, Any]
 def _download_ytdlp(source: str, directory: Path) -> tuple[Path, dict[str, Any]]:
     output = directory / "%(id)s.%(ext)s"
     from yt_dlp import YoutubeDL
-    options = {"outtmpl": str(output), "format": "bv*+ba/b", "merge_output_format": "mp4", "noplaylist": True, "quiet": True, "extractor_args": {"youtube": {"player_client": ["android", "ios"], "player_skip": ["webpage", "configs"]}}}
+    options = {"outtmpl": str(output), "format": "bv*+ba/b", "merge_output_format": "mp4", "noplaylist": True, "quiet": True}
     encoded_cookies = os.environ.get("YOUTUBE_COOKIES")
     if encoded_cookies:
         cookie_path = Path("/tmp/youtube_cookies.txt")
