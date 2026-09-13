@@ -37,11 +37,9 @@ image = (
 )
 app = modal.App("video-archive")
 
-# `required=False` lets deployment work if only one of these secrets exists.
-# Modal injects the keys from both secrets into the function environment.
+# Modal injects the Google Cloud secret into the function environment.
 MODAL_SECRETS = [
-    modal.Secret.from_name("googlecloud-secret", required=False),
-    modal.Secret.from_name("video-archive-config", required=False),
+    modal.Secret.from_name("googlecloud-secret"),
 ]
 
 
