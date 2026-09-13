@@ -69,7 +69,7 @@ def _service_account_credentials():
         )
 
     # Some Modal secrets expose the JSON directly under one of these names.
-    raw = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON") or os.getenv("SERVICE_ACCOUNT_KEY")
+    raw = os.getenv("SERVICE_ACCOUNT_JSON") or os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON") or os.getenv("SERVICE_ACCOUNT_KEY")
     if raw:
         candidate = Path(raw)
         if candidate.exists():
