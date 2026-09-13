@@ -59,13 +59,15 @@ def _service_account_credentials():
     from google.auth import default as google_auth_default
     from google.oauth2 import service_account
 
+    scopes = ['https://www.googleapis.com/auth/drive']
+
     # Native GCP/Modal integration normally exposes this path. Let Google's
     # ADC loader handle it, including quota/project configuration.
     credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     if credentials_path and Path(credentials_path).exists():
         return service_account.Credentials.from_service_account_file(
             credentials_path,
-            scopes=["https://www.googleapis.com/auth/drive.file"],
+            scopes=scopes,
         )
 
     # Some Modal secrets expose the JSON directly under one of these names.
@@ -74,20 +76,20 @@ def _service_account_credentials():
         candidate = Path(raw)
         if candidate.exists():
             return service_account.Credentials.from_service_account_file(
-                str(candidate), scopes=["https://www.googleapis.com/auth/drive.file"]
+                str(candidate), scopes=scopes
             )
         try:
             document = json.loads(raw)
         except json.JSONDecodeError as exc:
             raise RuntimeError("SERVICE_ACCOUNT_KEY must be JSON or a credential-file path") from exc
         return service_account.Credentials.from_service_account_info(
-            document, scopes=["https://www.googleapis.com/auth/drive.file"]
+            document, scopes=scopes
         )
 
     # Also support native application-default credentials without requiring a
     # service-account JSON variable at all.
     credentials, _ = google_auth_default(
-        scopes=["https://www.googleapis.com/auth/drive.file"]
+        scopes=scopes
     )
     return credentials
 
