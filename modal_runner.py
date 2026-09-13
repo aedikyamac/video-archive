@@ -4,11 +4,16 @@ Deploy: modal setup && modal deploy modal_runner.py
 Invoke: modal run modal_runner.py --url 'https://youtu.be/VIDEO_ID'
 HTTP: POST /archive with {"url": "..."} after `modal deploy`.
 
-Configure secrets in Modal, never in Git:
-  modal secret create video-archive-config \\
-    GOOGLE_SERVICE_ACCOUNT_JSON='...' GOOGLE_DRIVE_FOLDER_ID='...'
-Optional GitHub metadata publishing is intentionally opt-in; set
-GITHUB_TOKEN, GITHUB_REPO, and GITHUB_METADATA_PATH in the Modal secret.
+The function accepts either Modal secret name when available:
+  googlecloud-secret (native GCP integration or user-created secret)
+  video-archive-config (legacy/configuration secret)
+
+Expected configuration can be supplied by Modal secrets or environment variables:
+  GOOGLE_DRIVE_FOLDER_ID
+  GOOGLE_SERVICE_ACCOUNT_JSON, SERVICE_ACCOUNT_KEY, or
+  GOOGLE_APPLICATION_CREDENTIALS
+Optional GitHub metadata publishing:
+  GITHUB_TOKEN, GITHUB_REPO, GITHUB_METADATA_PATH
 """
 from __future__ import annotations
 
@@ -31,6 +36,13 @@ image = (
 )
 app = modal.App("video-archive")
 
+# `required=False` lets deployment work if only one of these secrets exists.
+# Modal injects the keys from both secrets into the function environment.
+MODAL_SECRETS = [
+    modal.Secret.from_name("googlecloud-secret", required=False),
+    modal.Secret.from_name("video-archive-config", required=False),
+]
+
 
 def normalize_url(value: str) -> str:
     value = value.strip()
@@ -41,23 +53,57 @@ def normalize_url(value: str) -> str:
     return value
 
 
-def drive_upload(path: Path, metadata: dict[str, Any]) -> str | None:
-    raw = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON")
-    folder = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
-    if not raw or not folder:
-        return None
+def _service_account_credentials():
+    """Resolve native GCP auth and common Modal secret key formats."""
+    from google.auth import default as google_auth_default
     from google.oauth2 import service_account
+
+    # Native GCP/Modal integration normally exposes this path. Let Google's
+    # ADC loader handle it, including quota/project configuration.
+    credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    if credentials_path and Path(credentials_path).exists():
+        return service_account.Credentials.from_service_account_file(
+            credentials_path,
+            scopes=["https://www.googleapis.com/auth/drive.file"],
+        )
+
+    # Some Modal secrets expose the JSON directly under one of these names.
+    raw = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON") or os.getenv("SERVICE_ACCOUNT_KEY")
+    if raw:
+        candidate = Path(raw)
+        if candidate.exists():
+            return service_account.Credentials.from_service_account_file(
+                str(candidate), scopes=["https://www.googleapis.com/auth/drive.file"]
+            )
+        try:
+            document = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError("SERVICE_ACCOUNT_KEY must be JSON or a credential-file path") from exc
+        return service_account.Credentials.from_service_account_info(
+            document, scopes=["https://www.googleapis.com/auth/drive.file"]
+        )
+
+    # Also support native application-default credentials without requiring a
+    # service-account JSON variable at all.
+    credentials, _ = google_auth_default(
+        scopes=["https://www.googleapis.com/auth/drive.file"]
+    )
+    return credentials
+
+
+def drive_upload(path: Path, metadata: dict[str, Any]) -> str | None:
+    folder = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
+    if not folder:
+        return None
     from googleapiclient.discovery import build
     from googleapiclient.http import MediaFileUpload
 
-    creds = service_account.Credentials.from_service_account_info(
-        json.loads(raw), scopes=["https://www.googleapis.com/auth/drive.file"]
-    )
-    service = build("drive", "v3", credentials=creds, cache_discovery=False)
+    service = build("drive", "v3", credentials=_service_account_credentials(), cache_discovery=False)
     body = {"name": path.name, "parents": [folder], "description": json.dumps(metadata)}
     result = service.files().create(
-        body=body, media_body=MediaFileUpload(str(path), resumable=True),
-        fields="id,webViewLink,webContentLink"
+        body=body,
+        media_body=MediaFileUpload(str(path), resumable=True),
+        fields="id,webViewLink,webContentLink",
     ).execute()
     return result.get("webViewLink") or result.get("webContentLink") or result["id"]
 
@@ -86,7 +132,7 @@ def github_metadata(record: dict[str, Any]) -> None:
         pass
 
 
-@app.function(image=image, timeout=3600, secrets=[modal.Secret.from_name("video-archive-config")])
+@app.function(image=image, timeout=3600, secrets=MODAL_SECRETS)
 @modal.fastapi_endpoint(method="POST")
 def archive(payload: dict[str, Any]) -> dict[str, Any]:
     source = normalize_url(str(payload.get("url") or payload.get("id") or ""))
