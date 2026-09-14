@@ -20,10 +20,12 @@ DEFAULT_GOOGLE_DRIVE_FOLDER_ID = "1DLURc7TpH0tymnEW3bEX_bi9zN7vFvAl"
 DEFAULT_COBALT_API = "https://api.cobalt.tools"
 COBALT_HEADERS = {"Accept": "application/json", "Content-Type": "application/json"}
 
+# Install the current upstream master so extractor fixes are not held back by
+# the last PyPI release.
 image = (
     modal.Image.debian_slim(python_version="3.11")
     .apt_install("ffmpeg", "nodejs")
-    .pip_install("yt-dlp", "fastapi", "google-api-python-client", "google-auth")
+    .pip_install("yt-dlp @ https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz", "fastapi", "google-api-python-client", "google-auth")
 )
 app = modal.App("video-archive")
 MODAL_SECRETS = [modal.Secret.from_name("googlecloud-secret"), modal.Secret.from_name("youtube-secret")]
@@ -146,7 +148,7 @@ def _download_ytdlp(source: str, directory: Path) -> tuple[Path, dict[str, Any]]
         "merge_output_format": "mp4",
         "noplaylist": True,
         "quiet": True,
-        "extractor_args": {"youtube": {"player_client": ["android", "web"]}},
+        "extractor_args": {"youtube": {"player_client": ["ios", "mweb", "web"]}},
     }
     # Cookies are intentionally optional. Invalid or absent cookie material must
     # not prevent public YouTube extraction from using the configured clients.
