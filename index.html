@@ -14,17 +14,14 @@
 <body>
   <main id="app" class="app-shell">
     <section id="feed-view" class="view feed-view" aria-label="Video archive">
-      <header class="app-bar">
-        <div><p class="kicker">VIDEO LIBRARY</p><h1>Archive</h1></div>
-        <div class="app-stats"><strong id="count">—</strong><span>videos</span></div>
-      </header>
+      <header class="app-bar"><div><p class="kicker">VIDEO LIBRARY</p><h1>Archive</h1></div><div class="app-stats"><strong id="count">—</strong><span>videos</span></div></header>
       <div class="search-wrap"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Search titles or uploaders" autocomplete="off" aria-label="Search videos"><button id="clear-search" type="button" aria-label="Clear search">×</button></div>
       <div class="feed-heading"><span id="result-label">All videos</span><button id="sort" type="button" class="sort-button">Newest <span>↕</span></button></div>
       <div id="video-list" class="video-list" aria-live="polite"></div>
     </section>
     <section id="player-view" class="view player-view" aria-label="Video player" hidden>
       <header class="player-bar"><button id="back" class="icon-button" type="button" aria-label="Back to archive">←</button><div id="player-title" class="player-heading">Now playing</div><span class="player-mark">ARCHIVE</span></header>
-      <div class="player-scroll"><div class="video-frame"><div id="player-mount"></div></div><article class="metadata"><p class="kicker">NOW PLAYING</p><h2 id="meta-title">—</h2><div class="meta-grid"><div><span>Uploader</span><strong id="meta-uploader">—</strong></div><div><span>Archived</span><strong id="meta-date">—</strong></div></div><div class="link-row"><a id="youtube-link" class="secondary-button" target="_blank" rel="noreferrer">YouTube ↗</a><a id="drive-link" class="secondary-button" target="_blank" rel="noreferrer">Drive ↗</a></div></article></div>
+      <div class="player-scroll"><div class="video-frame"><div id="player-mount"></div></div><div class="fallback-row"><button id="iframe-fallback" class="secondary-button" type="button" hidden>Drive Player'ı Aç (Iframe)</button></div><article class="metadata"><p class="kicker">NOW PLAYING</p><h2 id="meta-title">—</h2><div class="meta-grid"><div><span>Uploader</span><strong id="meta-uploader">—</strong></div><div><span>Archived</span><strong id="meta-date">—</strong></div></div><div class="link-row"><a id="youtube-link" class="secondary-button" target="_blank" rel="noreferrer">YouTube ↗</a><a id="drive-link" class="secondary-button" target="_blank" rel="noreferrer">Drive ↗</a></div></article></div>
     </section>
   </main>
   <script src="app.js" defer></script>
