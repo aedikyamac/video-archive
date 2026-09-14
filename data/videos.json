@@ -22,5 +22,16 @@
     "archivedAt": "2026-09-14T00:16:52.954183+00:00",
     "status": "uploaded",
     "artifactRunUrl": "https://drive.google.com/file/d/1SUaRGAje1SFDsqGyQF8phxomHNWQfvlk/view?usp=drivesdk"
+  },
+  {
+    "sourceUrl": "https://youtu.be/hwAyLbWyLiI",
+    "title": "Adamlar - Hepinize El Sallad\u0131m (live)",
+    "uploader": "Ezgi Korkmaz",
+    "thumbnail": "https://i.ytimg.com/vi/hwAyLbWyLiI/sddefault.jpg?sqp=-oaymwEmCIAFEOAD8quKqQMa8AEB-AH-CYAC0AWKAgwIABABGH8gJCgTMA8=&rs=AOn4CLD3z9rxhOH77kp3eBbAX6XGzb4zQg",
+    "duration": 189,
+    "downloader": "yt-dlp",
+    "archivedAt": "2026-09-14T01:03:17.438814+00:00",
+    "status": "uploaded",
+    "artifactRunUrl": "https://drive.google.com/file/d/1Atw5x3YZ0R5WQQ1H07GFktA7YZaVJcjU/view?usp=drivesdk"
   }
 ]
