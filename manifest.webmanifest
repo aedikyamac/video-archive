@@ -1,13 +1,1 @@
-{
-  "name": "Video Archive",
-  "short_name": "Archive",
-  "start_url": "/",
-  "scope": "/",
-  "display": "standalone",
-  "theme_color": "#121212",
-  "background_color": "#121212",
-  "description": "A private, searchable video archive.",
-  "icons": [
-    { "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%23675cff'/%3E%3Cpath d='M188 140h136c20 0 36 16 36 36v160c0 20-16 36-36 36H188c-20 0-36-16-36-36V176c0-20 16-36 36-36Z' fill='white'/%3E%3Cpath d='m230 206 100 50-100 50v-100Z' fill='%23675cff'/%3E%3C/svg%3E", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" }
-  ]
-}
+{"name":"Video Archive","short_name":"Archive","display":"standalone","theme_color":"#000000","background_color":"#000000","start_url":"./","scope":"./","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"},{"src":"apple-touch-icon.svg","sizes":"180x180","type":"image/svg+xml","purpose":"any"}],"apple-touch-icon":"apple-touch-icon.svg"}
