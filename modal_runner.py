@@ -22,8 +22,8 @@ COBALT_HEADERS = {"Accept": "application/json", "Content-Type": "application/jso
 
 image = (
     modal.Image.debian_slim(python_version="3.11")
-    .apt_install("ffmpeg")
-    .pip_install("yt-dlp==2026.08.19", "fastapi", "google-api-python-client", "google-auth")
+    .apt_install("ffmpeg", "nodejs")
+    .pip_install("yt-dlp", "fastapi", "google-api-python-client", "google-auth")
 )
 app = modal.App("video-archive")
 MODAL_SECRETS = [modal.Secret.from_name("googlecloud-secret"), modal.Secret.from_name("youtube-secret")]
@@ -142,22 +142,14 @@ def _download_ytdlp(source: str, directory: Path) -> tuple[Path, dict[str, Any]]
     from yt_dlp import YoutubeDL
     options = {
         "outtmpl": str(output),
-        "format": "bv*+ba/b",
+        "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
         "merge_output_format": "mp4",
         "noplaylist": True,
         "quiet": True,
-        "extractor_args": {"youtube": {"player_client": ["web_creator", "mweb", "tv"]}},
+        "extractor_args": {"youtube": {"player_client": ["android", "web"]}},
     }
-    encoded_cookies = os.environ.get("YOUTUBE_COOKIES")
-    if encoded_cookies:
-        cookie_path = Path("/tmp/youtube_cookies.txt")
-        compact_cookies = "".join(encoded_cookies.split())
-        try:
-            cookie_bytes = base64.b64decode(compact_cookies, validate=True)
-        except (ValueError, base64.binascii.Error):
-            cookie_bytes = encoded_cookies.encode()
-        cookie_path.write_bytes(cookie_bytes)
-        options["cookiefile"] = str(cookie_path)
+    # Cookies are intentionally optional. Invalid or absent cookie material must
+    # not prevent public YouTube extraction from using the configured clients.
     with YoutubeDL(options) as ydl:
         info = ydl.extract_info(source, download=True)
         filename = Path(ydl.prepare_filename(info))
