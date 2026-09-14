@@ -1,8 +1,8 @@
 [
   {
     "id": "0E92jZ9w7P0",
-    "title": "Sezen Aksu - Candan Erçetin / Keskin Bıçak",
-    "uploader": "Ahmet Atlı",
+    "title": "Sezen Aksu - Candan Er\u00e7etin / Keskin B\u0131\u00e7ak",
+    "uploader": "Ahmet Atl\u0131",
     "sourceUrl": "https://youtu.be/0E92jZ9w7P0?si=NalUxavoEl7p6Z1e",
     "thumbnail": "https://i.ytimg.com/vi/0E92jZ9w7P0/hqdefault.jpg",
     "duration": null,
@@ -11,5 +11,16 @@
     "artifactRunUrl": null,
     "status": "metadata-only",
     "notes": "Metadata retrieved from YouTube oEmbed. GitHub Actions is disabled; no video binary was downloaded."
+  },
+  {
+    "sourceUrl": "https://www.youtube.com/watch?v=hUB9M88kAdI",
+    "title": "Deniz TEK\u0130N - Sezenler Olmu\u015f",
+    "uploader": "EnginVEVO",
+    "thumbnail": "https://i.ytimg.com/vi/hUB9M88kAdI/maxresdefault.jpg",
+    "duration": 245,
+    "downloader": "yt-dlp",
+    "archivedAt": "2026-09-14T00:16:52.954183+00:00",
+    "status": "uploaded",
+    "artifactRunUrl": "https://drive.google.com/file/d/1SUaRGAje1SFDsqGyQF8phxomHNWQfvlk/view?usp=drivesdk"
   }
 ]
