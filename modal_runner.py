@@ -140,7 +140,14 @@ def _download_cobalt(source: str, directory: Path) -> tuple[Path, dict[str, Any]
 def _download_ytdlp(source: str, directory: Path) -> tuple[Path, dict[str, Any]]:
     output = directory / "%(id)s.%(ext)s"
     from yt_dlp import YoutubeDL
-    options = {"outtmpl": str(output), "format": "bv*+ba/b", "merge_output_format": "mp4", "noplaylist": True, "quiet": True}
+    options = {
+        "outtmpl": str(output),
+        "format": "bv*+ba/b",
+        "merge_output_format": "mp4",
+        "noplaylist": True,
+        "quiet": True,
+        "extractor_args": {"youtube": {"player_client": ["web_creator", "mweb", "tv"]}},
+    }
     encoded_cookies = os.environ.get("YOUTUBE_COOKIES")
     if encoded_cookies:
         cookie_path = Path("/tmp/youtube_cookies.txt")
