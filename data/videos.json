@@ -33,5 +33,16 @@
     "archivedAt": "2026-09-14T01:03:17.438814+00:00",
     "status": "uploaded",
     "artifactRunUrl": "https://drive.google.com/file/d/1Atw5x3YZ0R5WQQ1H07GFktA7YZaVJcjU/view?usp=drivesdk"
+  },
+  {
+    "sourceUrl": "https://youtu.be/z6PYEbBqbhg",
+    "title": "Sezen Aksu & Sertab Erener - Yaln\u0131zl\u0131k Senfonisi",
+    "uploader": "Enes Yilmaz",
+    "thumbnail": "https://i.ytimg.com/vi/z6PYEbBqbhg/hqdefault.jpg?sqp=-oaymwEmCOADEOgC8quKqQMa8AEB-AGOA4ACrAKKAgwIABABGBMgPyh_MA8=&rs=AOn4CLDyMAjq-PcT0TCypwSmrW6MkNfqDA",
+    "duration": 310,
+    "downloader": "yt-dlp",
+    "archivedAt": "2026-09-14T16:28:37.271556+00:00",
+    "status": "uploaded",
+    "artifactRunUrl": "https://drive.google.com/file/d/136bW4xvIR1f7JgUhrWA9u72_AeGf4YIg/view?usp=drivesdk"
   }
 ]
