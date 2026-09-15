@@ -1,4 +1,4 @@
-const CACHE='archive-shell-v3';
+const CACHE='archive-shell-v4';
 const SHELL=['./','./index.html','./app.css','./app.js','./manifest.webmanifest','./icon.svg'];
 
 self.addEventListener('install', event => {
