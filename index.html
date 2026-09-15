@@ -9,7 +9,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Archive</title>
   <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="https://vjs.zencdn.net/8.10.0/video-js.css">
   <link rel="stylesheet" href="app.css">
+  <style>.video-js,.video-js video{width:100%;height:100%;background:#000}.video-js .vjs-big-play-button{border-color:#c4f36b;color:#c4f36b;background:rgba(0,0,0,.65)}.video-js .vjs-play-progress,.video-js .vjs-volume-level{background:#c4f36b}</style>
 </head>
 <body>
   <main id="app" class="app-shell">
@@ -24,6 +26,7 @@
       <div class="player-scroll"><div class="video-frame"><div id="player-mount"></div></div><div class="fallback-row"><button id="iframe-fallback" class="secondary-button" type="button" hidden>Drive Player'ı Aç (Iframe)</button></div><article class="metadata"><p class="kicker">NOW PLAYING</p><h2 id="meta-title">—</h2><div class="meta-grid"><div><span>Uploader</span><strong id="meta-uploader">—</strong></div><div><span>Archived</span><strong id="meta-date">—</strong></div></div><div class="link-row"><a id="youtube-link" class="secondary-button" target="_blank" rel="noreferrer">YouTube ↗</a><a id="drive-link" class="secondary-button" target="_blank" rel="noreferrer">Drive ↗</a></div></article></div>
     </section>
   </main>
+  <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
   <script src="app.js" defer></script>
 </body>
 </html>
